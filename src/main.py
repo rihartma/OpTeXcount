@@ -1,18 +1,27 @@
 import re
-import keywords as kw
+import keywords
 
 
-kw.initialize ()
+keywords.initialize ()
 
 
-example_file = open ("../examples/example1.tex", "r")
+def is_keyword (word):
+    if (word in keywords.key_words):
+        return True
+    return False
 
 
-allwords = []
+def process_word (word):
+    if (is_keyword (word)):
+        print (word + " KEYWORD!")
+    else:
+        print (word + " normal text word")
 
-def parse (line):
+def read_words (line):
 
-    word_seps = " \t{}();:?!\n"
+    words_on_line = []
+
+    word_seps = " ();:?!\n"
     begin = end = 0
 
     while (begin < len (line)):
@@ -27,16 +36,17 @@ def parse (line):
                 break;
             end += 1
 
-        allwords.append (line[begin:end])
+        words_on_line.append (line[begin:end])
         begin = end
 
-    print ("Line parsed: ")
-    print (allwords)
+    return words_on_line
 
 
-while (True):
-    line = example_file.readline()
-    if (line == ""):
-        break
-    parse (example_file.readline())
+def run (filename):
+    
+    with open (filename, 'r') as file:
+        for line in file:
+            for word in read_words (line):
+                process_word (word)
 
+run ("../examples/header_sections.tex")
