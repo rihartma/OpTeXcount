@@ -1,4 +1,10 @@
+import re
+import tokens
 import keywords
+
+
+### TODO \par[some-tag] - resolve this situation
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 class Result ():
@@ -16,6 +22,7 @@ class Result ():
         counts = "Words in text: " + str (self.text_words) + "\n"
         counts += "Words in headers: " + str (self.header_words) + "\n"
         return counts
+
 
 class Cathegory ():
     def __init__ (self, t = 1):
@@ -54,34 +61,20 @@ def process_word (word):
         print (word)
         WORDS_COUNTS.increase (CURRENT_CATEGHORY)
 
-"""
-Gets string representing line from source file.
-Returns list of seperate words.
-At the end of each line it genererates end of line signalization - " EOL "
-"""
+
 def read_words (line):
-    words_on_line = []
+    '''
+    Parses a line of a source code passed by argument using regular expressions.
+    It seperates each word on the line and stores it in the list.
+    All non escape occurances of charackters {}[] are seperated to be a single "words"
+    All escape alphabetic characters are separated from the previous word
+    At the end of each line it genererates end of line signalization - EOL
+    '''
 
-    word_seps = " ();:?!\n"
-    begin = end = 0
-
-    while (begin < len (line)):
-        if (line[begin] in word_seps):
-            begin += 1
-            continue
-
-        end = begin + 1
-
-        while (end < len (line)):
-            if (line [end] in word_seps):
-                break;
-            end += 1
-
-        words_on_line.append (line[begin:end])
-        begin = end
-
+    line = re.sub (r'(?<!\\)(?:\\\\)*([{}\[\]])', r' \1 ', line)
+    line = re.sub (r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
+    words_on_line = re.split ("\s+", line)
     words_on_line.append (EOL)
-
     return words_on_line
 
 
@@ -100,8 +93,9 @@ def analyze_file (filename):
 keywords.initialize ()
 
 def main():
-    analyze_file ("../examples/header_sections.tex")
-    print (WORDS_COUNTS)
+    print (read_words ("It's only somé ddd\\\\try and, {another tr}y. What if \\\\\\key\\key"))
+    # analyze_file ("../examples/header_sections.tex")
+    # print (WORDS_COUNTS)
 
 
 if __name__ == "__main__":
