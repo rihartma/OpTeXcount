@@ -1,103 +1,235 @@
 import re
-import tokens
-import keywords
+import keywords as kw
+
+### -----------------------------------------------------------------------------------------------
+class WordIterator:
+    '''
+    A basic wrapper for sequentional reading of words from file
+    '''
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.word_queue = []
+        self.line_payload = 50  # how many lines will be loaded into the queue at one time
+        self.__load_line = 1    # which line haven't been already loaded into the queue
 
 
-### TODO \par[some-tag] - resolve this situation
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-class Result ():
-    def __init__ (self):
-        self.text_words = 0
-        self.header_words = 0
-
-    def increase (self, cathegory):
-        if (cathegory.get_type () == 1):
-            self.text_words += 1
+    def read(self):
+        '''
+        Returns word first word that wasn't already read by this particular object
+        '''
+        if (len(self.word_queue) == 0):
+            self.__load_payload()
+        if (len(self.word_queue) == 0):
+            return None
         else:
-            self.header_words += 1
-
-    def __str__ (self):
-        counts = "Words in text: " + str (self.text_words) + "\n"
-        counts += "Words in headers: " + str (self.header_words) + "\n"
-        return counts
+            return self.word_queue.pop(0)
 
 
-class Cathegory ():
-    def __init__ (self, t = 1):
-        self.__type_id = t   # implicitely normal text
-        # Hier can be added an extra class variables - utility extension where the programm counts and stores each subsections etc.
-
-    def set_type (self, cathegory_id):
-        self.__type_id = cathegory_id
-
-    def get_type (self):
-        return self.__type_id
-# ---------------------------------------------------------------------------------------------------------------------
-
-CURRENT_CATEGHORY = Cathegory ()
-WORDS_COUNTS = Result ()
-
-EOL = " EOL "
+    def push_back(self, word):
+        '''
+        Pushes word from argument into the first position of the queue
+        In case we already read a word but we want to re-read it again
+        '''
+        self.word_queue = [word] + self.word_queue
 
 
-def is_keyword (word):
-    if (word in keywords.key_words):
-        return True
-    return False
+    def __load_payload(self):
+        '''
+        Loads words from input file into the queue
+        '''
+        index = 0
+        with open (self.filename, 'r') as file:
+            for line in file:
+                index += 1
+                if (index < self.__load_line):
+                    continue
+                elif (index < self.__load_line + self.line_payload):
+                    self.word_queue += self.__parse_words(line)
+                else:
+                    break
+        self.__load_line = index + 1
 
+    def __parse_words (self, line):
+        '''
+        Parses a line passed by argument using regular expressions.
+        It seperates each word on the line and stores it into list.
+        All non escape occurances of charackters {}[] are seperated to be a single 'word'
+        All escaped alphabetic characters are separated from the previous word
+        At the end of every nonempty line newline character is placed
+        '''
+        if (line == "\n" or line == "\r\n" ):
+            return []
+        line = re.sub (r'(?<!\\)(?:\\\\)*([{}\[\]])', r' \1 ', line)
+        line = re.sub (r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
+        words_on_line = re.split ("\s+", line)
+        words_on_line.append ("\n")
+        return list(filter(lambda it: it != '', words_on_line))
 
-def process_word (word):
-    if (word == EOL):
-        CURRENT_CATEGHORY.set_type (1)
+### -----------------------------------------------------------------------------------------------
 
-    elif (is_keyword (word)):
-        cathegory = keywords.key_words [word]
-        if (cathegory == 2):
-            CURRENT_CATEGHORY.set_type (cathegory)
-    
-    else:
-        print (word)
-        WORDS_COUNTS.increase (CURRENT_CATEGHORY)
-
-
-def read_words (line):
+class Counter:
     '''
-    Parses a line of a source code passed by argument using regular expressions.
-    It seperates each word on the line and stores it in the list.
-    All non escape occurances of charackters {}[] are seperated to be a single "words"
-    All escape alphabetic characters are separated from the previous word
-    At the end of each line it genererates end of line signalization - EOL
+    Class that analyzes a source code and counts word counts
     '''
 
-    line = re.sub (r'(?<!\\)(?:\\\\)*([{}\[\]])', r' \1 ', line)
-    line = re.sub (r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
-    words_on_line = re.split ("\s+", line)
-    words_on_line.append (EOL)
-    return words_on_line
+    def __init__ (self, filename):
+        self.word_iter = WordIterator(filename) # source of words that will be analyzed
+        self.regular_words_count = 0
+        self.header_words_count = 0
+        self.__context = "regular-text"
 
 
-"""
-Reads a file with filename passed by parameter.
-It reads the file word by word and processes the loaded word
-"""
-def analyze_file (filename):
-    with open (filename, 'r') as file:
-        for line in file:
-            for word in read_words (line):
-                process_word (word)
+    def run (self):
+        '''
+        Main method of the class
+        Loads all words and initializes the analysis
+        '''
+        word = self.word_iter.read()
+        while (word != "\\bye" and word != None):
+            self.__process_word(word)
+            word = self.word_iter.read()
+        return [self.regular_words_count, self.header_words_count]
+
+
+    def __process_word(self, word):
+        '''
+        Decides how to treat with word from argument
+        '''
+        if (word == "%"):
+            self.__skip_commentary()
+        elif (word == "\n"):
+            return
+        elif (word == "{"):
+            self.__load_block()
+        elif (self.__is_keyword(word)):
+            self.__process_keyword(word)
+        else:
+            self.__process_text_word(word)
+
+
+    def __process_keyword(self, word):
+        if (not self.__known_keyword(word)):
+            # we skip unknown keywords
+            return
+
+        # load/skip params...
+        self.__read_arguments(word)
+
+        if (word == '\\tit'):
+            self.__load_header()
+        elif (word == '\\chap'):
+            self.__load_header()
+        elif (word == '\\sec'):
+            self.__load_header()
+        elif (word == '\\secc'):
+            self.__load_header()
+        elif (word == '\\begitems'):
+            self.__load_list()
+            # TODO
+
+
+    def __process_text_word(self, word):
+        if (self.__context == "regular-text"):
+            self.regular_words_count += 1
+        elif (self.__context == "header"):
+            self.header_words_count += 1
+
+
+    def __is_keyword(self, word):
+        if (len(word) >= 3):
+            if (word[0] == '\\' and word[1].isalpha() and word[2].isalpha()):
+                return True
+        return False
+
+
+    def __known_keyword(self, word):
+        if (word in kw.all_keywords):
+            return True
+        return False
+
+
+    def __load_header(self):
+        self.__context = 'header'
+        word = self.word_iter.read()
+        skip_new_line = False
+        while (word != None and word != "\\bye"):
+            if (word == "\n"):
+                if (not skip_new_line):
+                    self.__context = 'regular-text'
+                    return
+            elif (word == "^^J"):
+                skip_new_line = True
+            else:
+                self.__process_word(word)
+                skip_new_line = False
+            word = self.word_iter.read()
+
+
+    def __load_list(self):
+        word = self.word_iter.read()
+        while (word != "\\enditems"):
+            if (word == None):
+                raise Exception("No list ending found - \\enditems")
+            if (word != "*"):
+                self.__process_word(word)
+            word = self.word_iter.read()
+
+
+    def __load_block(self):
+        word = self.word_iter.read()
+        while (word != "}"):
+            if (word == None):
+                raise Exception("No closing bracket ('}') found.")
+            self.__process_word(word)
 
 
 
-keywords.initialize ()
+    def __skip_commentary(self):
+        word = self.word_iter.read()
+        while (word != None and word != "\n"):
+            word = self.word_iter.read()
+
+
+    def __read_arguments(self, word):
+        params = kw.all_keywords[word]
+        for p in params:
+            if (p == "B"):
+                self.__obligatory_argument()
+            elif (p == "O"):
+                self.__optional_argument()
+            else: # unknown specifier - no argument expected
+                pass
+
+
+    def __obligatory_argument(self):
+        word = self.word_iter.read()
+        if (word == None or word == "\\bye"):
+            raise Exception("No obligatory argument found")
+        return word
+
+
+    def __optional_argument(self):
+        word = self.word_iter.read()
+        if (word != "["):
+            self.word_iter.push_back(word)
+            return None
+        else:
+            arg = []
+            word = self.word_iter.read()
+            while (word != "]"):
+                arg.append(word)
+                word = self.word_iter.read()
+                if (word == None or word == "\bye"):
+                    return False
+            return word
+
+
 
 def main():
-    print (read_words ("It's only somé ddd\\\\try and, {another tr}y. What if \\\\\\key\\key"))
-    # analyze_file ("../examples/header_sections.tex")
-    # print (WORDS_COUNTS)
-
-
+    counter = Counter("../tests/test-03.tex")
+    print(counter.run())
+        
 if __name__ == "__main__":
     main()
 
