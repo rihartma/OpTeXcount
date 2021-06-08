@@ -75,6 +75,7 @@ class Header:
         self.words = []
         self.header_count = 0
         self.text_count = 0
+        self.caption_count = 0
 
     def add_header_word(self, word):
         self.words.append(word)
@@ -83,9 +84,12 @@ class Header:
     def add_text_word(self, word):
         self.text_count += 1
 
+    def add_caption_word(self, word):
+        self.caption_count += 1
+
     def __str__(self):
         result = self.type + " ("
-        result += str(self.header_count) + " + " + str(self.text_count) + ")"
+        result += str(self.header_count) + " + " + str(self.text_count) + " + " + str(self.caption_count) + ")"
         for word in self.words:
             result += " " + word
         return result
@@ -101,6 +105,7 @@ class Counter:
         self.word_iter = WordIterator(filename) # source of words that will be analyzed
         self.regular_words_count = 0
         self.header_words_count = 0
+        self.caption_words_count = 0
         self.all_headers = []
         self.__context = "regular-text"
 
@@ -122,7 +127,8 @@ class Counter:
         '''
         print ("Text words summary: " + str(self.regular_words_count))
         print ("Header words summary: " + str(self.header_words_count))
-        print ("Subcounts: (header-words-count + text-words-count)")
+        print ("Caption words summary: " + str(self.caption_words_count))
+        print ("Subcounts: (header-words-count + text-words-count + caption-words-count)")
         for header in self.all_headers:
             print (header)
 
@@ -144,23 +150,27 @@ class Counter:
 
 
     def __process_keyword(self, word):
+        word, arg = self.__split_keyword(word)
         if (word == '\\tit'):
             self.all_headers.append(Header("title"))
             self.__load_header()
         elif (word == '\\chap'):
             self.all_headers.append(Header("chapter"))
-            self.__skip_square_brackets()
+            self.__optional_argument()
             self.__load_header()
         elif (word == '\\sec'):
             self.all_headers.append(Header("section"))
-            self.__skip_square_brackets()
+            self.__optional_argument()
             self.__load_header()
         elif (word == '\\secc'):
             self.all_headers.append(Header("subsection"))
-            self.__skip_square_brackets()
+            self.__optional_argument()
             self.__load_header()
         elif (word == '\\begitems'):
             self.__load_list()
+        elif (word == '\\caption'):
+            self.__optional_argument()
+            self.__load_caption()
         elif (word in kw.keywords_list):
             self.__read_arguments(word)
         else:
@@ -177,6 +187,10 @@ class Counter:
         elif (self.__context == "header"):
             self.header_words_count += 1
             self.all_headers[-1].add_header_word(word)
+        elif (self.__context == "caption"):
+            self.caption_words_count += 1
+            if (len(self.all_headers)):
+                self.all_headers[-1].add_caption_word(word)
 
 
     def __is_keyword(self, word):
@@ -184,6 +198,12 @@ class Counter:
             if (word[0] == '\\' and word[1].isalpha() and word[2].isalpha()):
                 return True
         return False
+
+    def __split_keyword(self, word):
+        if (not "/" in word):
+            return (word, "")
+        word = word.split("/")
+        return (word[0], "/" + word[1])
 
 
     # def __known_keyword(self, word):
@@ -218,6 +238,19 @@ class Counter:
             if (word != "*"):
                 self.__process_word(word)
             word = self.word_iter.read()
+
+    def __load_caption(self):
+        orig_context = self.__context
+        self.__context = 'caption'
+        word = self.word_iter.read()
+        while (word != None and word != "\\bye"):
+            if (word == "\n"):
+                self.__context = orig_context
+                return
+            else:
+                self.__process_word(word)
+            word = self.word_iter.read()
+        self.__context = orig_context
 
 
     def __read_arguments(self, word):
@@ -266,9 +299,16 @@ class Counter:
 
     def __skip_curly_brackets(self):
         word = self.word_iter.read()
-        while (word != "}"):
+        bracket_count = 0
+        while (True):
             if (word == None):
                 raise Exception("No closing bracket ('}') found.")
+            elif (word == "{"):
+                bracket_count += 1
+            elif (word == "}"):
+                bracket_count -= 1
+            if (bracket_count <= 0):
+                break
             word = self.word_iter.read()
 
 
