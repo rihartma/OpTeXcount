@@ -68,6 +68,29 @@ class WordIterator:
 
 ### -----------------------------------------------------------------------------------------------
 
+class Header:
+    def __init__(self, header_type):
+        self.type = header_type # title, chapter, section, subsection
+        self.words = []
+        self.header_count = 0
+        self.text_count = 0
+
+    def add_header_word(self, word):
+        self.words.append(word)
+        self.header_count += 1
+
+    def add_text_word(self, word):
+        self.text_count += 1
+
+    def __str__(self):
+        result = self.type + " ("
+        result += str(self.header_count) + " + " + str(self.text_count) + ")"
+        for word in self.words:
+            result += " " + word
+        return result
+
+### -----------------------------------------------------------------------------------------------
+
 class Counter:
     '''
     Class that analyzes a source code and counts word counts
@@ -77,6 +100,7 @@ class Counter:
         self.word_iter = WordIterator(filename) # source of words that will be analyzed
         self.regular_words_count = 0
         self.header_words_count = 0
+        self.all_headers = []
         self.__context = "regular-text"
 
 
@@ -89,7 +113,17 @@ class Counter:
         while (word != "\\bye" and word != None):
             self.__process_word(word)
             word = self.word_iter.read()
-        return [self.regular_words_count, self.header_words_count]
+        #return [self.regular_words_count, self.header_words_count]
+
+    def print_result (self):
+        '''
+        Generates formated output of the counter
+        '''
+        print ("Text words summary: " + str(self.regular_words_count))
+        print ("Header words summary: " + str(self.header_words_count))
+        print ("Subcounts: (header-words-count + text-words-count)")
+        for header in self.all_headers:
+            print (header)
 
 
     def __process_word(self, word):
@@ -117,12 +151,16 @@ class Counter:
         self.__read_arguments(word)
 
         if (word == '\\tit'):
+            self.all_headers.append(Header("title"))
             self.__load_header()
         elif (word == '\\chap'):
+            self.all_headers.append(Header("chapter"))
             self.__load_header()
         elif (word == '\\sec'):
+            self.all_headers.append(Header("section"))
             self.__load_header()
         elif (word == '\\secc'):
+            self.all_headers.append(Header("subsection"))
             self.__load_header()
         elif (word == '\\begitems'):
             self.__load_list()
@@ -132,8 +170,11 @@ class Counter:
     def __process_text_word(self, word):
         if (self.__context == "regular-text"):
             self.regular_words_count += 1
+            if (len(self.all_headers)):
+                self.all_headers[-1].add_text_word(word)
         elif (self.__context == "header"):
             self.header_words_count += 1
+            self.all_headers[-1].add_header_word(word)
 
 
     def __is_keyword(self, word):
@@ -161,6 +202,7 @@ class Counter:
             elif (word == "^^J"):
                 skip_new_line = True
             else:
+
                 self.__process_word(word)
                 skip_new_line = False
             word = self.word_iter.read()
@@ -228,7 +270,8 @@ class Counter:
 
 def main():
     counter = Counter("../tests/test-03.tex")
-    print(counter.run())
+    counter.run()
+    counter.print_result()
         
 if __name__ == "__main__":
     main()
