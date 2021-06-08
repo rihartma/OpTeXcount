@@ -57,6 +57,7 @@ class WordIterator:
         All non escape occurances of charackters {}[] are seperated to be a single 'word'
         All escaped alphabetic characters are separated from the previous word
         At the end of every nonempty line newline character is placed
+        TODO separate commentary - %
         '''
         if (line == "\n" or line == "\r\n" ):
             return []
@@ -135,7 +136,7 @@ class Counter:
         elif (word == "\n"):
             return
         elif (word == "{"):
-            self.__load_block()
+            self.__load_curly_brackets()
         elif (self.__is_keyword(word)):
             self.__process_keyword(word)
         else:
@@ -143,28 +144,29 @@ class Counter:
 
 
     def __process_keyword(self, word):
-        if (not self.__known_keyword(word)):
-            # we skip unknown keywords
-            return
-
-        # load/skip params...
-        self.__read_arguments(word)
-
         if (word == '\\tit'):
             self.all_headers.append(Header("title"))
             self.__load_header()
         elif (word == '\\chap'):
             self.all_headers.append(Header("chapter"))
+            self.__skip_square_brackets()
             self.__load_header()
         elif (word == '\\sec'):
             self.all_headers.append(Header("section"))
+            self.__skip_square_brackets()
             self.__load_header()
         elif (word == '\\secc'):
             self.all_headers.append(Header("subsection"))
+            self.__skip_square_brackets()
             self.__load_header()
         elif (word == '\\begitems'):
             self.__load_list()
-            # TODO
+        elif (word in kw.keywords_list):
+            self.__read_arguments(word)
+        else:
+            pass
+            # skip unkwown keywords
+
 
 
     def __process_text_word(self, word):
@@ -184,29 +186,29 @@ class Counter:
         return False
 
 
-    def __known_keyword(self, word):
-        if (word in kw.all_keywords):
-            return True
-        return False
+    # def __known_keyword(self, word):
+    #     if (word in kw.keywords_list):
+    #         return True
+    #     return False
 
 
     def __load_header(self):
+        orig_context = self.__context
         self.__context = 'header'
         word = self.word_iter.read()
         skip_new_line = False
         while (word != None and word != "\\bye"):
             if (word == "\n"):
                 if (not skip_new_line):
-                    self.__context = 'regular-text'
+                    self.__context = orig_context
                     return
             elif (word == "^^J"):
                 skip_new_line = True
             else:
-
                 self.__process_word(word)
                 skip_new_line = False
             word = self.word_iter.read()
-
+        self.__context = orig_context
 
     def __load_list(self):
         word = self.word_iter.read()
@@ -218,28 +220,21 @@ class Counter:
             word = self.word_iter.read()
 
 
-    def __load_block(self):
-        word = self.word_iter.read()
-        while (word != "}"):
-            if (word == None):
-                raise Exception("No closing bracket ('}') found.")
-            self.__process_word(word)
-
-
-
-    def __skip_commentary(self):
-        word = self.word_iter.read()
-        while (word != None and word != "\n"):
-            word = self.word_iter.read()
-
-
     def __read_arguments(self, word):
-        params = kw.all_keywords[word]
+        params = kw.keywords_list[word]
         for p in params:
-            if (p == "B"):
+            if (p == "O"):
+                pass
+            elif (p == "W"):
                 self.__obligatory_argument()
-            elif (p == "O"):
+            elif (p == "S"):
                 self.__optional_argument()
+                # is it voluntary or not ??? !!! IMPORTANT
+            elif (p == "P"):
+                pass
+            elif (p == "C"):
+                # skip brackets or load them??? TODO
+                self.__skip_curly_brackets()
             else: # unknown specifier - no argument expected
                 pass
 
@@ -257,22 +252,46 @@ class Counter:
             self.word_iter.push_back(word)
             return None
         else:
-            arg = []
+            self.__skip_square_brackets()
+
+
+    def __load_curly_brackets(self):
+        word = self.word_iter.read()
+        while (word != "}"):
+            if (word == None):
+                raise Exception("No closing bracket ('}') found.")
+            self.__process_word(word)
             word = self.word_iter.read()
-            while (word != "]"):
-                arg.append(word)
-                word = self.word_iter.read()
-                if (word == None or word == "\bye"):
-                    return False
-            return word
+
+
+    def __skip_curly_brackets(self):
+        word = self.word_iter.read()
+        while (word != "}"):
+            if (word == None):
+                raise Exception("No closing bracket ('}') found.")
+            word = self.word_iter.read()
+
+
+    def __skip_square_brackets(self):
+        word = self.word_iter.read()
+        while (word != "]"):
+            if (word == None):
+                raise Exception("No closing bracket (']') found.")
+            word = self.word_iter.read()
+
+
+    def __skip_commentary(self):
+        word = self.word_iter.read()
+        while (word != None and word != "\n"):
+            word = self.word_iter.read()
 
 
 
 def main():
-    counter = Counter("../tests/test-03.tex")
+    counter = Counter("../tests/test-04.tex")
     counter.run()
     counter.print_result()
-        
+
 if __name__ == "__main__":
     main()
 
