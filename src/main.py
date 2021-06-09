@@ -172,7 +172,7 @@ class Counter:
         elif (word == '\\caption'):
             self.__optional_argument()
             self.__load_caption()
-        elif (word == '\\fnote' or word == '\\fnotetext'):
+        elif (word == '\\fnote' or word == '\\fnotetext' or word == '\\mnote'):
             self.__load_footnote()
         elif (word in kw.keywords_list):
             self.__read_arguments(word)
@@ -260,7 +260,7 @@ class Counter:
         orig_context = self.__context
         self.__context = 'caption'
         if (self.word_iter.read() != "{"):
-            raise Exception("Footnote in invalid format!")
+            return
         self.__load_curly_brackets()
         self.__context = orig_context
 
