@@ -108,6 +108,7 @@ class Counter:
         self.caption_words_count = 0
         self.all_headers = []
         self.__context = "regular-text"
+        self.no_count = [".", ",","!","?"]
 
 
     def run (self):
@@ -171,6 +172,8 @@ class Counter:
         elif (word == '\\caption'):
             self.__optional_argument()
             self.__load_caption()
+        elif (word == '\\fnote' or word == '\\fnotetext'):
+            self.__load_footnote()
         elif (word in kw.keywords_list):
             self.__read_arguments(word)
         else:
@@ -180,6 +183,8 @@ class Counter:
 
 
     def __process_text_word(self, word):
+        if (word in self.no_count):
+            return
         if (self.__context == "regular-text"):
             self.regular_words_count += 1
             if (len(self.all_headers)):
@@ -200,11 +205,10 @@ class Counter:
         return False
 
     def __split_keyword(self, word):
-        if (not "/" in word):
-            return (word, "")
-        word = word.split("/")
-        return (word[0], "/" + word[1])
-
+        for i in range(1, len(word)):
+            if (not word[i].isalpha()):
+                return (word[:i], word[i:])
+        return (word, "")
 
     # def __known_keyword(self, word):
     #     if (word in kw.keywords_list):
@@ -250,6 +254,14 @@ class Counter:
             else:
                 self.__process_word(word)
             word = self.word_iter.read()
+        self.__context = orig_context
+
+    def __load_footnote(self):
+        orig_context = self.__context
+        self.__context = 'caption'
+        if (self.word_iter.read() != "{"):
+            raise Exception("Footnote in invalid format!")
+        self.__load_curly_brackets()
         self.__context = orig_context
 
 
@@ -328,7 +340,7 @@ class Counter:
 
 
 def main():
-    counter = Counter("../tests/test-04.tex")
+    counter = Counter("../tests/test-06.tex")
     counter.run()
     counter.print_result()
 
