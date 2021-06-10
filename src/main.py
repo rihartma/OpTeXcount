@@ -1,6 +1,8 @@
 import re
 import keywords as kw
 
+# TODO math
+# TODO count verbatim words as text, not keywords
 
 class WordIterator:
     """
@@ -15,7 +17,7 @@ class WordIterator:
 
     def read(self):
         """
-        Returns word first word that wasn't already read by this particular object
+        Returns first word from file that wasn't already read by this particular object
         """
         if len(self.word_queue) == 0:
             self.__load_payload()
@@ -52,16 +54,18 @@ class WordIterator:
         """
         Parses a line passed by argument using regular expressions.
         It separates each word on the line and stores it into list.
-        All non escape occurrences of some characters are seperated to be a single 'word'
-        All escaped alphabetic characters are separated from the previous word
-        At the end of every nonempty line newline character is placed
-        TODO separate commentary - %
         """
+
         if line == "\n" or line == "\r\n":
             return []
-        line = re.sub(r'(?<!\\)(?:\\\\)*([{}\[\]()])', r' \1 ', line)
+        # All non escape occurrences of some characters are seperated to be a single 'word'
+        line = re.sub(r'(?<!\\)(?:\\\\)*([{}\[\]()%])', r' \1 ', line)
+        # $$ and $ are separated from the text to be a single 'word'
+        line = re.sub(r'(?<!\\)(?:\\\\)*((\$\$)|(\$))', r' \1 ', line)
+        # All escaped alphabetic characters are separated from the previous word
         line = re.sub(r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
         words_on_line = re.split("\s+", line)
+        # At the end of every nonempty line newline character is placed
         words_on_line.append("\n")
         return list(filter(lambda it: it != '', words_on_line))
 
@@ -85,7 +89,7 @@ class Header:
         self.caption_count += 1
 
     def __str__(self):
-        result = self.type + " ("
+        result = "  " + self.type + " ("
         result += str(self.header_count) + " + " + str(self.text_count) + " + " + str(self.caption_count) + ")"
         for word in self.words:
             result += " " + word
@@ -102,6 +106,9 @@ class Counter:
         self.regular_words_count = 0
         self.header_words_count = 0
         self.caption_words_count = 0
+        self.figure_float_count = 0
+        self.math_inline_count = 0
+        self.math_count = 0
         self.all_headers = []
         self.__context = "regular-text"
 
@@ -121,7 +128,11 @@ class Counter:
         """
         print("Text words summary: " + str(self.regular_words_count))
         print("Header words summary: " + str(self.header_words_count))
-        print("Caption words summary: " + str(self.caption_words_count))
+        print("Caption and notes words summary: " + str(self.caption_words_count))
+        print("Headers summary: " + str(len(self.all_headers)))
+        print("Figure/float count: " + str(self.figure_float_count))
+        print("Inline math formulae count: " + str(self.math_inline_count))
+        print("Math formulae count: " + str(self.math_count))
         print("Subcounts: (header-words-count + text-words-count + caption-words-count)")
         for header in self.all_headers:
             print(header)
@@ -136,6 +147,10 @@ class Counter:
             return
         elif word == "{":
             self.__load_curly_brackets()
+        elif word == "$":
+            self.__load_inline_formulae()
+        elif word == "$$":
+            self.__load_formulae()
         elif self.__is_keyword(word):
             self.__process_keyword(word)
         else:
@@ -166,6 +181,8 @@ class Counter:
         elif word == '\\fnote' or word == '\\fnotetext' or word == '\\mnote':
             self.__load_footnote()
         elif word in kw.keywords_list:
+            if word in ["\\table", "\\inspic"]:  # TODO this should be in keywords file
+                self.figure_float_count += 1
             self.__read_arguments(word)
         else:
             pass
@@ -248,6 +265,22 @@ class Counter:
         self.__load_curly_brackets()
         self.__context = orig_context
 
+    def __load_formulae(self):
+        word = self.word_iter.read()
+        while word != "$$":
+            if word is None:
+                raise Exception("No end of math formulae found!")
+            word = self.word_iter.read()
+        self.math_count += 1
+
+    def __load_inline_formulae(self):
+        word = self.word_iter.read()
+        while word != "$":
+            if word is None:
+                raise Exception("No end of inline math formulae found!")
+            word = self.word_iter.read()
+        self.math_inline_count += 1
+
     def __read_arguments(self, word):
         params = kw.keywords_list[word]
         for p in params:
@@ -316,7 +349,7 @@ class Counter:
 
 
 def main():
-    counter = Counter("../tests/test-06.tex")
+    counter = Counter("../tests/test-07.tex")
     counter.run()
     counter.print_result()
 

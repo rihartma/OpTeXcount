@@ -33,5 +33,6 @@ keywords_list = {
     "\\magscale": ["S"],
     "\\margins": ["O", "W", "P", "W"],
     "\\style": ["W"],
-    "\\url": ["C"]
+    "\\url": ["C"],
+    "\\loadmath": ["C"]
 }
