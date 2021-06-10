@@ -1,0 +1,157 @@
+% This optex source code is partialy copied from http://petr.olsak.net/tat/priklad-optex.tex
+% header words: 16
+% text words:  281
+% caption words: 14
+
+
+\chyph                      % české vzory dělení slov
+\fontfam[Schola]            % fontová rodina TeXGyre Schola
+\margins/1 a4 (3,3,3,3)cm   % okraje 3cm ze všech stran pro stranu A4
+\typosize[11/13]            % velikost písma 11pt na 13pt řádkování
+\activettchar"              % znak " bude ohraničovat řádkový verbatim
+\hyperlinks\Blue\Green      % interní odkazy modré, webové odkazy zelené
+\outlines0                  % klikací obsah po straně PDF prohlížeče
+
+\def\center{\noindent\hfil} % zkratka pro centrování
+
+\tit Ukázka -- \OpTeX/
+
+\nonum\notoc\sec Obsah
+
+\maketoc
+
+\sec Základní struktura
+
+Dokument se skládá z odstavců (ve zdrojovém textu jsou odděleny prázdnými řádky)
+a dále z kapitol, sekcí a podsekcí.
+
+\secc Výčty
+
+V textu můžeme používat výčty:
+
+\begitems
+* první
+* druhý
+\enditems
+
+
+Někdy mohou být výčty vnořeny:
+
+\begitems
+* První
+* Druhý.
+  \begitems \style a
+  * Podproblém,
+  * ještě jeden podproblém,
+  * poslední podproblém.
+  \enditems
+* Třetí.
+* Poslední.
+\enditems
+ 
+
+
+
+\secc Vyznačování
+
+Text můžeme zdůraznit {\it kurzívou}, nebo {\bf tučně}. 
+
+\secc[poznamky]  Poznámky
+
+Poznámka pod čarou\fnote{Vypadá takto.} je automaticky číslovaná.
+Může jich být více\fnote{Druhá poznámka.}.
+
+
+\sec[dalsi] Další sekce
+
+\secc Verbatim text
+
+Vložíme {\it verbatim text}, tedy text \uv{tak jak je} bez interpretace
+\TeX{}em:
+
+\begtt
+int main (void) {
+  printf ("helo world!\n");
+  return 0;
+}
+\endtt
+
+Kromě toho je možné psát "#kusy {kódů}" přímo v textu odstavce.
+Klíčové slovo "\tit" uvozuje nadpis.
+
+\secc Obrázky
+
+Obrázky se do odborného textu obvykle vkládají včetně popisku.
+
+\midinsert \label[ptacek]
+  \center \picw=7cm \inspic final_bird.png
+  \medskip
+  \caption/f Hlavní textura hry Flappy Bird
+\endinsert
+
+
+\secc Odkazy
+
+Na automaticky číslované objekty je možné odkazovat. Ve zdrojovém dokumentu
+je třeba použít {\it lejblík} v místě cíle a stejný lejblík v místě odkazu.
+Odkazy vypadají například takto: viz sekci~\ref[dalsi] na
+straně~\pgref[dalsi], dále v podsekci~\ref[poznamky] je zmínka o poznámkách
+pod čarou a rovnice~\ref[rce] na straně~\pgref[rce] uvádí zajímavou
+matematickou myšlenku. Každý jistě poznal, že na obrázku~\ref[ptacek] se
+nachází karikatura ptáčka.
+
+Vnější odkazy směřují obvykle na webové stránky, 
+např.~\url{http://petr.olsak.net/opmac.html}.
+
+\secc Tabulky
+
+Na tabulky se používá "\hbox" / "\vbox" aritmetika \TeX{}u a 
+příkaz "\halign". To ale není nic vhodného pro začátečníka. Proto makra
+(OPmac, \LaTeX, Con\TeX{}t) umožňují autorům textu psát tabulky jednodušeji. 
+Příklad tabulky: 
+
+\bigskip
+\center\table{||l|cc||}{\crl \tskip.5ex
+           & \multispan2 \hfil počet \qquad\hfil\vrule\kern\vvkern\vrule\strut\cr
+   makro             & řádků kódu & stran dokumentace \crli \tskip.5ex
+   plain             &    1241 & 100 \cr
+   OPmac             &    1600 &  19 \crli \tskip.5ex
+   \LaTeX{} (jádro)  &    8000 & 240 \cr
+   hyperref          &   24773 & 423 \cr
+   color + graphics  &    2469 &  81 \crli \tskip.5ex
+   Ti{\it k}Z        & 1\,634\,882 & 726 \crli \tskip.5ex
+   Con\TeX{}t        & 1\,155\,673 & 547 \crl
+ } 
+\nobreak\medskip
+\caption/t Makra a jejich rámcový rozsah
+\bigskip
+
+V tabulce ve zdrojovém textu je jednak záhlaví s pravidlem, jak mají být
+formátována jednotlivá pole tabulky, a dále data oddělená od sebe smluvenými
+oddělovači. Na úrovni primitivního příkazu "\halign" jsou těmito oddělovači
+znaky "&" a "\cr". Jednotlivá makra mohou autorům nabízet mírné modifikace
+tohoto způsobu vyznačování.
+
+\secc Matematika
+
+V řádku se píše matematika mezi dolary: $a^2+b^2=c^2$. Nebo je možno sestavit
+samostatnou rovnici obklopenou dvojicí dolarů:
+
+\label[rce]
+$$
+  \int x^\alpha {\rm d}x = \cases {
+     x^{\alpha+1} \over \alpha+1 & pro $\alpha\not=-1$ \cr \noalign{\medskip}
+     \ln x                       & pro $\alpha=-1 $
+  }
+  \eqmark
+$$ 
+Vzorce se zapisují zhruba tak, jak bychom je anglicky přečetli.
+
+
+
+$$
+  {\bbchar A} = \pmatrix{ a & b & c \cr d & e & f \cr g & h & i}.
+$$
+Toť na úvod vše.
+
+\bye
