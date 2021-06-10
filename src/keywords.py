@@ -31,5 +31,6 @@ keywords_list = {
     "\\margins": ["O", "W", "P", "W"],
     "\\style": ["W"],
     "\\url": ["C"],
-    "\\loadmath": ["C"]
+    "\\loadmath": ["C"],
+    "\\everytt": ["C"]
 }
