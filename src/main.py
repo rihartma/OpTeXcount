@@ -1,8 +1,8 @@
 import re
 import keywords as kw
 
-# TODO margin count thinks that shouldnt be counted
 # TODO count verbatim words as text, not keywords
+
 
 class WordIterator:
     """
@@ -110,6 +110,12 @@ class Counter:
         self.math_inline_count = 0
         self.math_count = 0
         self.all_headers = []
+        """
+        Three possible types of __context:
+        1) regular-text
+        2) headers
+        3) captions
+        """
         self.__context = "regular-text"
 
     def run(self):
@@ -184,6 +190,8 @@ class Counter:
             if word in ["\\table", "\\inspic"]:  # TODO this should be in keywords file
                 self.figure_float_count += 1
             self.__read_arguments(word)
+        elif word == '\\begtt':
+            self.__load_verbatim()
         else:
             pass
             # skip unknown keywords
@@ -280,6 +288,18 @@ class Counter:
                 raise Exception("No end of inline math formulae found!")
             word = self.word_iter.read()
         self.math_inline_count += 1
+
+    def __load_verbatim(self):
+        orig_context = self.__context
+        self.__context = "regular-text"
+        word = self.word_iter.read()
+        while word != "\\endtt":
+            print(word)
+            if word is None:
+                raise Exception("Verbatim text not terminated!")
+            self.__process_text_word(word)
+            word = self.word_iter.read()
+        self.__context = orig_context
 
     def __read_arguments(self, word):
         params = kw.keywords_list[word]
