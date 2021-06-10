@@ -1,7 +1,7 @@
 import re
 import keywords as kw
 
-# TODO math
+# TODO margin count thinks that shouldnt be counted
 # TODO count verbatim words as text, not keywords
 
 class WordIterator:
@@ -163,20 +163,20 @@ class Counter:
             self.__load_header()
         elif word == '\\chap':
             self.all_headers.append(Header("chapter"))
-            self.__optional_argument()
+            self.__skip_brackets("[", "]")
             self.__load_header()
         elif word == '\\sec':
             self.all_headers.append(Header("section"))
-            self.__optional_argument()
+            self.__skip_brackets("[", "]")
             self.__load_header()
         elif word == '\\secc':
             self.all_headers.append(Header("subsection"))
-            self.__optional_argument()
+            self.__skip_brackets("[", "]")
             self.__load_header()
         elif word == '\\begitems':
             self.__load_list()
         elif word == '\\caption':
-            self.__optional_argument()
+            self.__skip_brackets("[", "]")
             self.__load_caption()
         elif word == '\\fnote' or word == '\\fnotetext' or word == '\\mnote':
             self.__load_footnote()
@@ -285,17 +285,15 @@ class Counter:
         params = kw.keywords_list[word]
         for p in params:
             if p == "O":
-                pass
+                pass  # this case is managed by '__process_keyword' method
             elif p == "W":
                 self.__obligatory_argument()
             elif p == "S":
-                self.__optional_argument()
-                # is it voluntary or not ??? !!! IMPORTANT
+                self.__skip_brackets("[", "]")
             elif p == "P":
-                pass
+                self.__skip_brackets("(", ")")
             elif p == "C":
-                # skip brackets or load them??? TODO
-                self.__skip_curly_brackets()
+                self.__skip_brackets("{", "}")
             else:  # unknown specifier - no argument expected
                 pass
 
@@ -305,13 +303,13 @@ class Counter:
             raise Exception("No obligatory argument found")
         return word
 
-    def __optional_argument(self):
-        word = self.word_iter.read()
-        if word != "[":
-            self.word_iter.push_back(word)
-            return None
-        else:
-            self.__skip_square_brackets()
+    # def __optional_argument(self):
+    #     word = self.word_iter.read()
+    #     if word != "[":
+    #         self.word_iter.push_back(word)
+    #         return None
+    #     else:
+    #         self.__skip_brackets("[","]")
 
     def __load_curly_brackets(self):
         word = self.word_iter.read()
@@ -321,25 +319,20 @@ class Counter:
             self.__process_word(word)
             word = self.word_iter.read()
 
-    def __skip_curly_brackets(self):
+    def __skip_brackets(self, opening, closing):
         word = self.word_iter.read()
         bracket_count = 0
         while True:
             if word is None:
-                raise Exception("No closing bracket ('}') found.")
-            elif word == "{":
+                raise Exception("No closing bracket ('" + closing + "') found.")
+            elif word == opening:
                 bracket_count += 1
-            elif word == "}":
+            elif word == closing:
                 bracket_count -= 1
             if bracket_count <= 0:
+                if word != closing:
+                    self.word_iter.push_back(word)
                 break
-            word = self.word_iter.read()
-
-    def __skip_square_brackets(self):
-        word = self.word_iter.read()
-        while word != "]":
-            if word is None:
-                raise Exception("No closing bracket (']') found.")
             word = self.word_iter.read()
 
     def __skip_commentary(self):
