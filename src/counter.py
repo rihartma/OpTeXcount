@@ -103,9 +103,8 @@ class Counter:
         elif word == '\\begtt':
             self.__load_verbatim()
         elif word == '\\verbchar' or word == '\\activettchar':  # keywords with same functionality
-            if arg is None:
-                raise Exception("No argument for " + word + " found!")
             self.verb_char = arg
+            self.word_iter.add_separator(arg)
         else:
             pass
             # skip unknown keywords
@@ -203,6 +202,7 @@ class Counter:
         orig_context = self.__context
         self.__context = 'caption'
         if self.word_iter.read() != "{":
+            self.__context = orig_context
             return
         self.__load_curly_brackets()
         self.__context = orig_context
@@ -231,18 +231,12 @@ class Counter:
 
     def __load_verbatim(self, ending="\\endtt"):
         word = self.word_iter.read()
-        # while ending not in word:
         while ending != word:
+            print(word)
             if word is None:
                 raise Exception("Verbatim text not terminated!")
             self.__process_text_word(word)
             word = self.word_iter.read()
-        # we resolve situation in which verbatim character is part of the word
-        # if (ending != word):
-        #     pos = word.find(ending)
-        #     self.__process_text_word(word[:pos])
-        #     if (pos + len(ending) != len(word)):
-        #         self.word_iter.push_back(word[pos+len(ending):])
 
     def __read_arguments(self, word):
         """
