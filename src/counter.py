@@ -146,6 +146,11 @@ class Counter:
         return word, None
 
     def __load_header(self):
+        """
+        Loads header
+        It reads the source code until new line occurs.
+        In case of ^^J at the end of the line it reads until next new line occurs.
+        """
         orig_context = self.__context
         self.__context = 'header'
         word = self.word_iter.read()
@@ -164,6 +169,9 @@ class Counter:
         self.__context = orig_context
 
     def __load_list(self):
+        """
+        Loads list - words that are surrounded by '\begitems' and '\enditems'
+        """
         word = self.word_iter.read()
         while word != "\\enditems":
             if word is None:
@@ -173,6 +181,9 @@ class Counter:
             word = self.word_iter.read()
 
     def __load_caption(self):
+        """
+        Loads caption - words until EOL
+        """
         orig_context = self.__context
         self.__context = 'caption'
         word = self.word_iter.read()
@@ -186,6 +197,9 @@ class Counter:
         self.__context = orig_context
 
     def __load_footnote(self):
+        """
+        Loads footnote(block in curly brackets)
+        """
         orig_context = self.__context
         self.__context = 'caption'
         if self.word_iter.read() != "{":
@@ -194,6 +208,9 @@ class Counter:
         self.__context = orig_context
 
     def __load_formulae(self):
+        """
+        Loads math formulae($$ as separator)
+        """
         word = self.word_iter.read()
         while word != "$$":
             if word is None:
@@ -202,6 +219,9 @@ class Counter:
         self.math_count += 1
 
     def __load_inline_formulae(self):
+        """
+        Loads inline math formulae($ as separator)
+        """
         word = self.word_iter.read()
         while word != "$":
             if word is None:
