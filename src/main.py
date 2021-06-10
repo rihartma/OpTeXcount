@@ -303,14 +303,6 @@ class Counter:
             raise Exception("No obligatory argument found")
         return word
 
-    # def __optional_argument(self):
-    #     word = self.word_iter.read()
-    #     if word != "[":
-    #         self.word_iter.push_back(word)
-    #         return None
-    #     else:
-    #         self.__skip_brackets("[","]")
-
     def __load_curly_brackets(self):
         word = self.word_iter.read()
         while word != "}":
