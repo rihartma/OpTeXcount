@@ -32,7 +32,8 @@ keywords_list = {
     "\\style": ["W"],
     "\\url": ["C"],
     "\\loadmath": ["C"],
-    "\\everytt": ["C"]
+    "\\everytt": ["C"],
+    "\\eqmark": ["S"]
 }
 
 """
