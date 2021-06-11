@@ -1,6 +1,7 @@
 import keywords as kw
 import word_iterator as wi
 import header as hd
+import color_print as cp
 
 
 class Counter:
@@ -8,15 +9,16 @@ class Counter:
     Class that analyzes a source code and counts word counts
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, color_print=False):
         self.word_iter = wi.WordIterator(filename)  # source of words that will be analyzed
+        self.color_print = color_print  # input text will be printed(with colors)
+        self.printer = cp.Printer()
         self.regular_words_count = 0
         self.header_words_count = 0
         self.caption_words_count = 0
         self.figure_float_count = 0
         self.math_inline_count = 0
         self.math_count = 0
-        self.verb_char = None  # used for inline verbatim text
         self.all_headers = []
         """
         Three possible types of __context:
@@ -25,6 +27,7 @@ class Counter:
         3) captions
         """
         self.__context = "regular-text"
+        self.verb_char = None  # used for inline verbatim text
 
     def run(self):
         """
@@ -50,6 +53,35 @@ class Counter:
         print("Subcounts: (header-words-count + text-words-count + caption-words-count)")
         for header in self.all_headers:
             print(header)
+
+    def print_counted_word(self, word):
+        """
+        Prints word that was counted. The color depends on category of the word.
+        """
+        if not self.color_print:
+            return
+        if self.__context == "regular-text":
+            self.printer.blue(word)
+        elif self.__context == "header":
+            self.printer.cyan(word)
+        elif self.__context == "caption":
+            self.printer.green(word)
+
+    def print_keyword(self, word):
+        """
+        Prints keyword - word with red color
+        """
+        if not self.color_print:
+            return
+        self.printer.red(word)
+
+    def print_irrelevant_words(self, word):
+        """
+        Prints words that wasn't counted and are not important for our functionality, like commentary words etc...
+        """
+        if not self.color_print:
+            return
+        self.printer.white(word)
 
     def __process_word(self, word):
         """
