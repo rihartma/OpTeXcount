@@ -105,6 +105,8 @@ class Counter:
         elif word == '\\verbchar' or word == '\\activettchar':  # keywords with same functionality
             self.verb_char = arg
             self.word_iter.add_separator(arg)
+        elif word == '\\code':
+            self.__load_code_verbatim()
         else:
             pass
             # skip unknown keywords
@@ -230,13 +232,25 @@ class Counter:
         self.math_inline_count += 1
 
     def __load_verbatim(self, ending="\\endtt"):
+        """
+        Reads words until ending(param) word occurs.
+        These words are processed as regular word(not keywords etc...)
+        """
         word = self.word_iter.read()
         while ending != word:
-            print(word)
             if word is None:
                 raise Exception("Verbatim text not terminated!")
             self.__process_text_word(word)
             word = self.word_iter.read()
+
+    def __load_code_verbatim(self):
+        """
+        In case of verbatim using "\code" keyword
+        """
+        word = self.word_iter.read()
+        if word != "{":
+            raise Exception("\\Code must be followed be opening curly bracket('{')!")
+        self.__load_verbatim("}")
 
     def __read_arguments(self, word):
         """

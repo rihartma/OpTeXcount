@@ -37,14 +37,11 @@ class WordIterator:
         """
         self.separators.append(sep)
         new_queue = []
-        print(self.word_queue)
-        print()
         regex_arg = re.compile('(' + sep + ')')
         for word in self.word_queue:
             new_word = re.sub(regex_arg, r' \1 ', word)
             new_queue += new_word.split(' ')
         self.word_queue = list(filter(lambda it: it != '' and it != ' ', new_queue))
-        print(self.word_queue)
 
     def __load_payload(self):
         """

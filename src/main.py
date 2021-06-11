@@ -6,6 +6,5 @@ def main():
     c.run()
     c.print_result()
 
-
 if __name__ == "__main__":
     main()
