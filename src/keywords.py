@@ -34,3 +34,9 @@ keywords_list = {
     "\\loadmath": ["C"],
     "\\everytt": ["C"]
 }
+
+"""
+List of keywords that introduce some floats, we want to be counted in section table/floats/figures
+Pay attention! This keyword MUST be introduced too in keyword_list!
+"""
+floats_keywords = ["\\table", "\\inspic"]

@@ -97,7 +97,7 @@ class Counter:
         elif word == '\\fnote' or word == '\\fnotetext' or word == '\\mnote':
             self.__load_footnote()
         elif word in kw.keywords_list:
-            if word in ["\\table", "\\inspic"]:  # TODO this should be in keywords file
+            if word in kw.floats_keywords:
                 self.figure_float_count += 1
             self.__read_arguments(word)
         elif word == '\\begtt':
