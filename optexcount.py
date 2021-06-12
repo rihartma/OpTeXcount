@@ -11,12 +11,17 @@ def main():
     elif len(sys.argv) == 3 and sys.argv[2] != "-verbose":
         print(sys.argv[2] + " Invalid specifier!")
     else:
-        if len(sys.argv) == 2:
-            c = src.counter.Counter(sys.argv[1])
-        else:
-            c = src.counter.Counter(sys.argv[1], True)
-        c.run()
-        c.print_result()
+        try:
+            if len(sys.argv) == 2:
+                c = src.counter.Counter(sys.argv[1])
+            else:
+                c = src.counter.Counter(sys.argv[1], True)
+            c.run()
+            c.print_result()
+        except Exception as err:
+            print()
+            print("Problem occurred!")
+            print(err)
 
 
 if __name__ == "__main__":
