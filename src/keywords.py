@@ -38,6 +38,20 @@ keywords_list = {
 
 """
 List of keywords that introduce some floats, we want to be counted in section table/floats/figures
-Pay attention! This keyword MUST be introduced too in keyword_list!
+Pay attention! This keyword MUST be introduced in keyword_list too, otherwise it won't count words properly!
 """
 floats_keywords = ["\\table", "\\inspic"]
+
+"""
+Dictionary of keys - keywords and values - their counts
+Keywords(keys) represents macros/aliases that are replaced by certain number of words(values)
+"""
+aliases = {
+    "\TeX": 1,
+    "\OpTeX": 1,
+    "\LuaTeX": 1,
+    "\XeTeX": 1,
+    "\OPmac": 1,
+    "\CS": 1,
+    "\csplain": 1
+}
