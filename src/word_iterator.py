@@ -16,7 +16,9 @@ class WordIterator:
 
     def read(self):
         """
-        Returns first word from file that wasn't already read by this particular object
+        Returns first word from file that wasn't already read by this particular object.
+        Return value format: (word, separator)
+        When all words had been read, it returns None
         """
         if len(self.word_queue) == 0:
             self.__load_payload()
@@ -48,6 +50,7 @@ class WordIterator:
     def __load_payload(self):
         """
         Loads words from input file into the queue
+        Format of words: (word, separator)
         """
         index = 0
         with open(self.filename, 'r') as file:
