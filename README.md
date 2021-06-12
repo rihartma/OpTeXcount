@@ -1,18 +1,5 @@
-# TeXcount for optex
+# OpTeXcount
 
-This script is supposed to analyze source code written in OpTeX.
-
-The code is analyzed and splitted into these 6 categories:
-1. Text words
-2. Header words
-3. Caption words
-4. Header Count
-5. Figure/Float count
-6. Inline formulae
-7. Displayed formulae
-
-The functionality is not exactly thought through yet.
-
-### Basic working principle:
-Using python script and its library (re) for regular expresions we find in the text key words. Every of this keyword has got its own cathegory. Than we count the words. Later on we might mark up these words in different colors to seperate differente cathegories.
-After this analysis we print out the statistics of a particular source code
+What is OpTeXcount? It is a basic python script that analyzes OpTeX source code and counts words in specific categories. For more information about this tool read `optexcount-doc.pdf`.
+### How to use it?
+Run: `python3 optexcount.py filename [-verbose]`, where `filename` is the name of our OpTeX code file. What does the optional argument `-verbose`? It prints the entire source code with colored words according to their categories.
