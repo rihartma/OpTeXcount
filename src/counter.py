@@ -1,6 +1,7 @@
-import keywords as kw
-import word_iterator as wi
-import header as hd
+import src.keywords as kw
+import src.word_iterator as wi
+import src.header as hd
+import src.color_print as cp
 
 
 class Counter:
@@ -8,15 +9,16 @@ class Counter:
     Class that analyzes a source code and counts word counts
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, color_print=False):
         self.word_iter = wi.WordIterator(filename)  # source of words that will be analyzed
+        self.color_print = color_print  # input text will be printed(with colors)
+        self.printer = cp.Printer()
         self.regular_words_count = 0
         self.header_words_count = 0
         self.caption_words_count = 0
         self.figure_float_count = 0
         self.math_inline_count = 0
         self.math_count = 0
-        self.verb_char = None  # used for inline verbatim text
         self.all_headers = []
         """
         Three possible types of __context:
@@ -25,16 +27,20 @@ class Counter:
         3) captions
         """
         self.__context = "regular-text"
+        self.verb_char = None  # used for inline verbatim text
 
     def run(self):
         """
         Main method of the class
         Loads all words and initializes the analysis
         """
-        word = self.word_iter.read()
-        while word != "\\bye" and word is not None:
-            self.__process_word(word)
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "\\bye":
+            self.__process_word(pair)
+            pair = self.word_iter.read()
+        if pair is not None:
+            self.print_keyword(pair)
+            self.print_irrelevant_word(("","\n"))
 
     def print_result(self):
         """
@@ -51,29 +57,68 @@ class Counter:
         for header in self.all_headers:
             print(header)
 
-    def __process_word(self, word):
+    def print_counted_word(self, pair):
+        """
+        Prints word that was counted. The color depends on category of the word.
+        """
+        if not self.color_print:
+            return
+        if self.__context == "regular-text":
+            self.printer.blue(pair[0]+pair[1])
+        elif self.__context == "header":
+            self.printer.cyan(pair[0]+pair[1])
+        elif self.__context == "caption":
+            self.printer.green(pair[0]+pair[1])
+
+    def print_keyword(self, pair):
+        """
+        Prints keyword - word with red color
+        """
+        if not self.color_print:
+            return
+        self.printer.red(pair[0]+pair[1])
+
+    def print_irrelevant_word(self, pair):
+        """
+        Prints words that wasn't counted and are not important for our functionality, like commentary words etc...
+        """
+        if not self.color_print:
+            return
+        self.printer.white(pair[0]+pair[1])
+
+    def __process_word(self, pair):
         """
         Decides how to treat with word from argument
         """
-        if word == "%":
+        if len(pair[0]) == 0 or pair[0] == "\n":  # empty word or newline
+            self.print_irrelevant_word(pair)
+        elif pair[0] == "%":
+            self.print_irrelevant_word(pair)
             self.__skip_commentary()
-        elif word == "\n":
-            return
-        elif word == "{":
+        elif pair[0] == "{":
+            self.print_irrelevant_word(pair)
             self.__load_curly_brackets()
-        elif word == "$":
+        elif pair[0] == "$":
+            self.print_keyword(pair)
             self.__load_inline_formulae()
-        elif word == "$$":
+        elif pair[0] == "$$":
+            self.print_keyword(pair)
             self.__load_formulae()
-        elif self.verb_char is not None and word == self.verb_char:
+        elif self.verb_char is not None and pair[0] == self.verb_char:
+            self.print_keyword(pair)
             self.__load_verbatim(self.verb_char)
-        elif self.__is_keyword(word):
-            self.__process_keyword(word)
+        elif self.__is_keyword(pair[0]):
+            self.__process_keyword(pair)
         else:
-            self.__process_text_word(word)
+            self.__process_text_word(pair)
 
-    def __process_keyword(self, word):
-        word, arg = self.__split_keyword(word)
+    def __process_keyword(self, pair):
+        word, arg = self.__split_keyword(pair[0])
+        self.print_keyword((word, ''))
+        if (arg is None):
+            self.print_irrelevant_word(('', pair[1]))
+        else:
+            self.print_irrelevant_word((arg, pair[1]))
         if word == '\\tit':
             self.all_headers.append(hd.Header("title"))
             self.__load_header()
@@ -107,22 +152,29 @@ class Counter:
             self.word_iter.add_separator(arg)
         elif word == '\\code':
             self.__load_code_verbatim()
+        elif word in kw.logos:
+            self.__load_logo(word, arg, pair[1])
         else:
             pass
             # skip unknown keywords
 
-    def __process_text_word(self, word):
-        # all word with only one character that is not alphanumeric won't be counted as word
-        if len(word) == 1 and not word.isalnum():
-            return
-        if self.__context == "regular-text":
+    def __process_text_word(self, pair):
+        # word with only one character that is not alphanumeric won't be counted as word
+        if len(pair[0]) == 0:
+            self.print_irrelevant_word(pair)
+        elif len(pair[0]) == 1 and not pair[0].isalnum():
+            self.print_irrelevant_word(pair)
+        elif self.__context == "regular-text":
+            self.print_counted_word(pair)
             self.regular_words_count += 1
             if len(self.all_headers):
                 self.all_headers[-1].add_text_word()
         elif self.__context == "header":
+            self.print_counted_word(pair)
             self.header_words_count += 1
-            self.all_headers[-1].add_header_word(word)
+            self.all_headers[-1].add_header_word(pair[0])
         elif self.__context == "caption":
+            self.print_counted_word(pair)
             self.caption_words_count += 1
             if len(self.all_headers):
                 self.all_headers[-1].add_caption_word()
@@ -154,32 +206,43 @@ class Counter:
         """
         orig_context = self.__context
         self.__context = 'header'
-        word = self.word_iter.read()
+        pair = self.word_iter.read()
         skip_new_line = False
-        while word is not None and word != "\\bye":
-            if word == "\n":
+        while pair is not None and pair[0] != "\\bye":
+            if not len(pair[0]):
+                self.print_irrelevant_word(pair)
+            elif pair[0] == "\n":
+                self.print_irrelevant_word(pair)
                 if not skip_new_line:
                     self.__context = orig_context
                     return
-            elif word == "^^J":
+                skip_new_line = False
+            elif pair[0] == "^^J":
+                self.print_irrelevant_word(pair)
                 skip_new_line = True
             else:
-                self.__process_word(word)
+                self.__process_word(pair)
                 skip_new_line = False
-            word = self.word_iter.read()
+            pair = self.word_iter.read()
         self.__context = orig_context
+        if pair is not None:
+            self.__process_keyword(pair)
 
     def __load_list(self):
         """
         Loads list - words that are surrounded by '\begitems' and '\enditems'
         """
-        word = self.word_iter.read()
-        while word != "\\enditems":
-            if word is None:
-                raise Exception("No list ending found - \\enditems")
-            if word != "*":
-                self.__process_word(word)
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "\\enditems":
+            if pair[0] != "*":
+                self.__process_word(pair)
+            else:
+                self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
+        if pair is None:
+            raise Exception("No list ending found - \\enditems")
+        else:
+            self.print_keyword(pair)
 
     def __load_caption(self):
         """
@@ -187,15 +250,18 @@ class Counter:
         """
         orig_context = self.__context
         self.__context = 'caption'
-        word = self.word_iter.read()
-        while word is not None and word != "\\bye":
-            if word == "\n":
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "\\bye":
+            if pair[0] == "\n":
+                self.print_irrelevant_word(pair)
                 self.__context = orig_context
                 return
             else:
-                self.__process_word(word)
-            word = self.word_iter.read()
+                self.__process_word(pair)
+            pair = self.word_iter.read()
         self.__context = orig_context
+        if pair is not None:
+            self.print_keyword(pair)
 
     def __load_footnote(self):
         """
@@ -203,9 +269,14 @@ class Counter:
         """
         orig_context = self.__context
         self.__context = 'caption'
-        if self.word_iter.read() != "{":
+        pair = self.word_iter.read()
+        if pair is None:
+            raise Exception("No opening curly bracket found!")
+        if pair[0] != "{":
             self.__context = orig_context
+            self.word_iter.push_back(pair)
             return
+        self.print_irrelevant_word(pair)
         self.__load_curly_brackets()
         self.__context = orig_context
 
@@ -213,44 +284,74 @@ class Counter:
         """
         Loads math formulae($$ as separator)
         """
-        word = self.word_iter.read()
-        while word != "$$":
-            if word is None:
-                raise Exception("No end of math formulae found!")
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "$$":
+            self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
+        if pair is None:
+            raise Exception("No end of math formulae found!")
+        else:
+            self.print_keyword(pair)
         self.math_count += 1
 
     def __load_inline_formulae(self):
         """
         Loads inline math formulae($ as separator)
         """
-        word = self.word_iter.read()
-        while word != "$":
-            if word is None:
-                raise Exception("No end of inline math formulae found!")
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "$":
+            self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
         self.math_inline_count += 1
+        if pair is None:
+            raise Exception("No end of inline math formulae found!")
+        else:
+            self.print_keyword(pair)
 
-    def __load_verbatim(self, ending="\\endtt"):
+    def __load_verbatim(self, ending="\\endtt", keyword_print=True):
         """
         Reads words until ending(param) word occurs.
         These words are processed as regular word(not keywords etc...)
         """
-        word = self.word_iter.read()
-        while ending != word:
-            if word is None:
-                raise Exception("Verbatim text not terminated!")
-            self.__process_text_word(word)
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and ending != pair[0]:
+            self.__process_text_word(pair)
+            pair = self.word_iter.read()
+        if pair is None:
+            raise Exception("Verbatim text not terminated!")
+        else:
+            if keyword_print:
+                self.print_keyword(pair)
+            else:
+                self.print_irrelevant_word(pair)
 
     def __load_code_verbatim(self):
         """
         In case of verbatim using "\code" keyword
         """
-        word = self.word_iter.read()
-        if word != "{":
+        pair = self.word_iter.read()
+        if pair[0] != "{":
             raise Exception("\\Code must be followed be opening curly bracket('{')!")
-        self.__load_verbatim("}")
+        self.print_irrelevant_word(pair)
+        self.__load_verbatim("}", False)
+
+    def __load_logo(self, logo, arg, sep):
+        """
+        Checks whether logo keyword is followed by slash etc...
+        """
+        if arg != '/' or len(sep) > 0:
+            pass
+        elif self.__context == "regular-text":
+            self.regular_words_count += 1
+            if len(self.all_headers):
+                self.all_headers[-1].add_text_word()
+        elif self.__context == "header":
+            self.header_words_count += 1
+            self.all_headers[-1].add_header_word(logo)
+        elif self.__context == "caption":
+            self.caption_words_count += 1
+            if len(self.all_headers):
+                self.all_headers[-1].add_caption_word()
 
     def __read_arguments(self, word):
         """
@@ -276,45 +377,54 @@ class Counter:
         """
         Just reads another word. In case of the end of source file Exception is thrown
         """
-        word = self.word_iter.read()
-        if word is None or word == "\\bye":
+        pair = self.word_iter.read()
+        if pair is None or pair[0] == "\\bye":
             raise Exception("No obligatory argument found")
-        return word
+        self.print_irrelevant_word(pair)
+        return pair
 
     def __load_curly_brackets(self):
         """
         Loads block of source code in curly brackets
         """
-        word = self.word_iter.read()
-        while word != "}":
-            if word is None:
-                raise Exception("No closing bracket ('}') found.")
-            self.__process_word(word)
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "}":
+            self.__process_word(pair)
+            pair = self.word_iter.read()
+        if pair is None:
+            raise Exception("No closing bracket ('}') found.")
+        else:
+            self.print_irrelevant_word(pair)
 
     def __skip_brackets(self, opening, closing):
         """
         Skips block of source code in brackets opening-closing
         """
-        word = self.word_iter.read()
+        pair = self.word_iter.read()
         bracket_count = 0
         while True:
-            if word is None:
+            if pair is None:
                 raise Exception("No closing bracket ('" + closing + "') found.")
-            elif word == opening:
+            elif pair[0] == opening:
                 bracket_count += 1
-            elif word == closing:
+                self.print_irrelevant_word(pair)
+            elif pair[0] == closing:
                 bracket_count -= 1
+                self.print_irrelevant_word(pair)
             if bracket_count <= 0:
-                if word != closing:
-                    self.word_iter.push_back(word)
+                if pair[0] != closing:
+                    self.word_iter.push_back(pair)
                 break
-            word = self.word_iter.read()
+            elif pair[0] != opening and pair[0] != closing:
+                self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
 
     def __skip_commentary(self):
         """
         Skips entire line
         """
-        word = self.word_iter.read()
-        while word is not None and word != "\n":
-            word = self.word_iter.read()
+        pair = self.word_iter.read()
+        while pair is not None and pair[0] != "\n":
+            self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
+        self.print_irrelevant_word(pair)

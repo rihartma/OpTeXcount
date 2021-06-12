@@ -38,6 +38,11 @@ keywords_list = {
 
 """
 List of keywords that introduce some floats, we want to be counted in section table/floats/figures
-Pay attention! This keyword MUST be introduced too in keyword_list!
+Pay attention! This keyword MUST be introduced in keyword_list too, otherwise it won't count words properly!
 """
 floats_keywords = ["\\table", "\\inspic"]
+
+"""
+List of keywords of logos
+"""
+logos = ["\\TeX", "\\OpTeX", "\\LuaTeX", "\\XeTeX", "\\OPmac", "\\CS", "\\csplain"]

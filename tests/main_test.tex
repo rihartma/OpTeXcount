@@ -1,6 +1,6 @@
 % This optex source code is partialy copied from http://petr.olsak.net/tat/priklad-optex.tex
-% header words: 16
-% text words:  281
+% text words:  221
+% header words: 15
 % caption words: 14
 
 
@@ -14,15 +14,9 @@
 
 \def\center{\noindent\hfil} % zkratka pro centrování
 
-\tit Ukázka -- \OpTeX/
-
-\nonum\notoc\sec Obsah
-
-\maketoc
+\tit Ukázka \OpTeX u
 
 \sec Základní struktura
-
-Seznam log: \TeX, \OpTeX, \LuaTeX, \XeTeX, \OPmac, \CS and \csplain
 
 Dokument se skládá z odstavců (ve zdrojovém textu jsou odděleny prázdnými řádky)
 a dále z kapitol, sekcí a podsekcí.
@@ -52,8 +46,6 @@ Někdy mohou být výčty vnořeny:
 \enditems
  
 
-
-
 \secc Vyznačování
 
 Text můžeme zdůraznit {\it kurzívou}, nebo {\bf tučně}. 
@@ -71,15 +63,15 @@ Může jich být více\fnote{Druhá poznámka.}.
 Vložíme {\it verbatim text}, tedy text \uv{tak jak je} bez interpretace
 \TeX{}em:
 
+Výčet:
 \begtt
-int main (void) {
-  printf ("helo world!\n");
-  return 0;
-}
+\begitems
+* První
+* Druhý.
+\enditems
 \endtt
 
 Kromě toho je možné psát "#kusy {kódů}" přímo v textu odstavce.
-Klíčové slovo "\tit" uvozuje nadpis.
 
 \secc Obrázky
 
@@ -107,10 +99,7 @@ např.~\url{http://petr.olsak.net/opmac.html}.
 
 \secc Tabulky
 
-Na tabulky se používá "\hbox" / "\vbox" aritmetika \TeX{}u a 
-příkaz "\halign". To ale není nic vhodného pro začátečníka. Proto makra
-(OPmac, \LaTeX, Con\TeX{}t) umožňují autorům textu psát tabulky jednodušeji. 
-Příklad tabulky: 
+Na tabulky se používá "\hbox" / "\vbox" aritmetika.
 
 \bigskip
 \center\table{||l|cc||}{\crl \tskip.5ex
@@ -130,9 +119,7 @@ Příklad tabulky:
 
 V tabulce ve zdrojovém textu je jednak záhlaví s pravidlem, jak mají být
 formátována jednotlivá pole tabulky, a dále data oddělená od sebe smluvenými
-oddělovači. Na úrovni primitivního příkazu "\halign" jsou těmito oddělovači
-znaky "&" a "\cr". Jednotlivá makra mohou autorům nabízet mírné modifikace
-tohoto způsobu vyznačování.
+oddělovači.
 
 \secc Matematika
 
