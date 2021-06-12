@@ -152,6 +152,8 @@ class Counter:
             self.word_iter.add_separator(arg)
         elif word == '\\code':
             self.__load_code_verbatim()
+        elif word in kw.logos:
+            self.__load_logo(word, arg, pair[1])
         else:
             pass
             # skip unknown keywords
@@ -260,8 +262,6 @@ class Counter:
         self.__context = orig_context
         if pair is not None:
             self.print_keyword(pair)
-        else:
-            self.print_keyword(pair)
 
     def __load_footnote(self):
         """
@@ -334,6 +334,24 @@ class Counter:
             raise Exception("\\Code must be followed be opening curly bracket('{')!")
         self.print_irrelevant_word(pair)
         self.__load_verbatim("}", False)
+
+    def __load_logo(self, logo, arg, sep):
+        """
+        Checks whether logo keyword is followed by slash etc...
+        """
+        if arg != '/' or len(sep) > 0:
+            pass
+        elif self.__context == "regular-text":
+            self.regular_words_count += 1
+            if len(self.all_headers):
+                self.all_headers[-1].add_text_word()
+        elif self.__context == "header":
+            self.header_words_count += 1
+            self.all_headers[-1].add_header_word(logo)
+        elif self.__context == "caption":
+            self.caption_words_count += 1
+            if len(self.all_headers):
+                self.all_headers[-1].add_caption_word()
 
     def __read_arguments(self, word):
         """
