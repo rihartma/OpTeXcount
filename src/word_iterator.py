@@ -10,8 +10,9 @@ class WordIterator:
         self.filename = filename
         self.word_queue = []
         self.line_payload = 50  # how many lines will be loaded into the queue at one time
+        self.__lines_count = sum(1 for line in open(filename))
         self.__load_line = 1  # index of first line which haven't been already loaded into the queue
-        self.separators = []
+        self.__separators = []
 
     def read(self):
         """
@@ -35,7 +36,7 @@ class WordIterator:
         """
         All words will be separated with sep separator
         """
-        self.separators.append(sep)
+        self.__separators.append(sep)
         new_queue = []
         regex_arg = re.compile('(' + sep + ')')
         for word, sep in self.word_queue:
@@ -56,9 +57,11 @@ class WordIterator:
                     continue
                 elif index < self.__load_line + self.line_payload:
                     self.word_queue += self.__parse_words(line)
+                    if index >= self.__lines_count:
+                        index += 1
                 else:
                     break
-        self.__load_line = index + 1
+        self.__load_line = index
 
     def __parse_words(self, line):
         """
@@ -76,7 +79,7 @@ class WordIterator:
         # All escaped alphabetic characters are separated from the previous word
         line = re.sub(r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
         # Iterate through every separator and put spaces around them
-        for sep in self.separators:
+        for sep in self.__separators:
             line = re.sub('(' + sep + ')', r' \1 ', line)
         words_on_line = re.split(r'\s+', line)
         # At the end of every nonempty line newline character is placed
