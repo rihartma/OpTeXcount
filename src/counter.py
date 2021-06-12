@@ -40,7 +40,7 @@ class Counter:
             pair = self.word_iter.read()
         if pair is not None:
             self.print_keyword(pair)
-            self.print_irrelevant_word(("","\n"))
+            self.print_irrelevant_word(("", "\n"))
 
     def print_result(self):
         """
@@ -113,9 +113,14 @@ class Counter:
             self.__process_text_word(pair)
 
     def __process_keyword(self, pair):
+        """
+        Treats with keywords.
+        Calls action on known keywords that are important for the counter
+        If keyword is unknown it is skipped
+        """
         word, arg = self.__split_keyword(pair[0])
         self.print_keyword((word, ''))
-        if (arg is None):
+        if arg is None:
             self.print_irrelevant_word(('', pair[1]))
         else:
             self.print_irrelevant_word((arg, pair[1]))
@@ -155,10 +160,12 @@ class Counter:
         elif word in kw.logos:
             self.__load_logo(word, arg, pair[1])
         else:
-            pass
-            # skip unknown keywords
+            pass  # skip unknown keywords
 
     def __process_text_word(self, pair):
+        """
+        Increases word counts based on the word location - word context
+        """
         # word with only one character that is not alphanumeric won't be counted as word
         if len(pair[0]) == 0:
             self.print_irrelevant_word(pair)
@@ -181,6 +188,9 @@ class Counter:
 
     @staticmethod
     def __is_keyword(word):
+        """
+        Decides whether word is keyword or not
+        """
         if len(word) >= 3:
             if word[0] == '\\' and word[1].isalpha() and word[2].isalpha():
                 return True
