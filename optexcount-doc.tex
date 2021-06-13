@@ -39,7 +39,7 @@ To get this utility running, Python3 has to be installed. Then user can run this
 python3 optexcount.py optex-filename
 \endtt
 
-User can also use {\Blue `-verbose`} specifier. The source code will be printed on the screen with colored words, so you can easily see, what is considered as text word, header word, caption word, keyword etc.
+User can also use {\Blue `-verbose`} specifier. The source code will be printed on the screen with colored words, so he can easily see, what is considered as text word, header word, caption word, keyword etc.
 
 \sec A Brief Implementation Description
 
@@ -52,7 +52,7 @@ In case of some keyword, that is important for the utility to identify, for exam
 
 \sec Utility Limitations
 
-The results are pretty precise when the most basic \OpTeX/ constructions are used. As I already mentioned, it is really basic and lightweight utility. When user uses some more advanced \TeX constructions, problems may occur, and the counts may be imprecise. It doesn't take into account macro expansion, self defined rules etc\dots When using this utility, a valid \OpTeX/ source code should be passed. If the file contains some errors(for example unterminated inline verbatim), utility terminates the process and won't provide much information about the problem. This utility only works with one particular file so it doesn't count included files as well.
+The results are pretty precise when the most basic \OpTeX/ constructions are used. As It has been already mentioned above, it is really basic and lightweight utility. When user uses some more advanced \TeX constructions, problems may occur, and the counts may be imprecise. It doesn't take into account macro expansion, self defined rules etc\dots When using this utility, a valid \OpTeX/ source code should be passed. If the file contains some errors(for example unterminated inline verbatim), utility terminates the process and won't provide much information about the problem. This utility only works with one particular file so it doesn't count included files as well.
 
 Beside above mentioned limitations of this utility, it could be very useful for the analysis of basic \OpTeX/ documents(such as the exemplary document {\Blue `tests/main_test.tex`}).
 
