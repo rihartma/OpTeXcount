@@ -13,7 +13,7 @@
 \sec Functionality and Usage
 
 \OpTeX count is a basic python utility that analyzes \OpTeX source code. It is inspired by already existing \TeX count for \LaTeX. The functionality is really lightweight and basic.
-It counts words and other elements of \OpTeX/ document and sorts them into individual categories. These categories are inspired by \TeX count.
+It counts words and other elements of \OpTeX/ document and sorts them out into individual categories. These categories are inspired by \TeX count.
 
 \begitems
 \typosize[11.5/16]
@@ -27,19 +27,19 @@ It counts words and other elements of \OpTeX/ document and sorts them into indiv
 * Displayed math formulae
 \enditems
 
-Regular text words are words that occur in the main text. Header words are introduced using these particular keywords: {\Blue `\tit`}, {\Blue `\chap`}, {\Blue `\sec`} and {\Blue `\secc`}. Caption words takes into account captions of tables and figures, i.e., {\Blue `\caption/t`} and {\Blue `\caption/f`}, footnotes({\Blue `\fnote`} or {\Blue `\fnotetext`}) and marginal notes({\Blue `\mnote`}). Header count is the number of all headers in our document. Figures/Tables count counts all tables and figures which occur in the document. Inline formulae are introduced using {\Blue `$`\dots`$`} and displayed formulae are introduced using {\Blue `$$`\dots`$$`}.
+Regular text words are words that occur in the main text. Header words are introduced using these particular keywords: {\Blue `\tit`}, {\Blue `\chap`}, {\Blue `\sec`} and {\Blue `\secc`}. Caption words take into account captions of tables and figures, i.e., {\Blue `\caption/t`} and {\Blue `\caption/f`}, footnotes({\Blue `\fnote`} or {\Blue `\fnotetext`}) and marginal notes({\Blue `\mnote`}). Header count is the number of all headers in our document. Figures/Tables count counts all tables and figures which occur in the document. Inline formulae are introduced using {\Blue `$`\dots`$`} and displayed formulae are introduced using {\Blue `$$`\dots`$$`}.
 
 If there is a verbatim text in some category, its words are counted too.
 
 Alongside above mentioned statistics, all individual sections are printed separately with particular word counts.
 
-This get this utility running, Python3 has to be installed. Then user can run this utility by command:
+To get this utility running, Python3 has to be installed. Then user can run this utility by command:
 
 \begtt
 python3 optexcount.py optex-filename
 \endtt
 
-User can also use {\Blue `-verbose`} specifier. The source code will be printed on the screen with colored words, so he can easily see, what is considered as text word, header word, caption word, keyword etc.
+User can also use {\Blue `-verbose`} specifier. The source code will be printed on the screen with colored words, so you can easily see, what is considered as text word, header word, caption word, keyword etc.
 
 \sec A Brief Implementation Description
 
@@ -47,13 +47,13 @@ User can also use {\Blue `-verbose`} specifier. The source code will be printed 
 
 If some specific keyword occurs, that is not known by this utility, it is skipped. Problem may occur, if an unknown keyword has got some arguments, the utility could count these arguments as individual words. Therefore, most common keywords with arguments are listed in `src/keywords.py`, so the utility can load successfully these arguments. If there is some important keyword missing, feel free to modify this file, to add this keyword\dots
 
-In case of some keyword, that is important for the utility to identify, for example {\Blue `\sec`} or {\Blue `\fnote`}, special function is ran, to manage this particular keyword. The place, from which we process the word also determines the category of the word, in what color should be this word highlighted in {\Blue `-verbose`} mode etc.
+In case of some keyword, that is important for the utility to identify, for example {\Blue `\sec`} or {\Blue `\fnote`}, special handler routine is ran, to manage this particular keyword. The place, from which we process the word also determines the category of the word, in what color should be this word highlighted in {\Blue `-verbose`} mode etc.
 
 
 \sec Utility Limitations
 
-The results are pretty precise when the most basic \OpTeX/ constructions are used. As I already mentioned, it is really basic and lightweight utility. When user uses some more advanced \TeX constructions, problems may occur, and the counts could be imprecise. It doesn't take into account macro expansion, self defined rules etc\dots When using this utility, a valid \OpTeX/ source code should be passed. If the file contains some errors(for example unterminated inline verbatim), utility terminates the process and won't provide much information about the problem. This utility only works with one particular file so it doesn't count some included files as well.
+The results are pretty precise when the most basic \OpTeX/ constructions are used. As I already mentioned, it is really basic and lightweight utility. When user uses some more advanced \TeX constructions, problems may occur, and the counts may be imprecise. It doesn't take into account macro expansion, self defined rules etc\dots When using this utility, a valid \OpTeX/ source code should be passed. If the file contains some errors(for example unterminated inline verbatim), utility terminates the process and won't provide much information about the problem. This utility only works with one particular file so it doesn't count included files as well.
 
-Beside above mentioned limitations of this utility, it could be very useful for the analysis of basic \OpTeX documents(such as the source code of this {\Blue `optexcount-doc.pdf`} document, a brief description of \OpTeX count).
+Beside above mentioned limitations of this utility, it could be very useful for the analysis of basic \OpTeX/ documents(such as the exemplary document {\Blue `tests/main_test.tex`}).
 
 \bye
