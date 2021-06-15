@@ -38,6 +38,8 @@ class WordIterator:
         """
         All words will be separated with sep separator
         """
+        if sep in self.__separators:
+            return
         self.__separators.append(sep)
         new_queue = []
         regex_arg = re.compile('(' + sep + ')')

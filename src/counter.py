@@ -9,8 +9,11 @@ class Counter:
     Class that analyzes a source code and counts word counts
     """
 
-    def __init__(self, filename, color_print=False):
+    def __init__(self, filename, color_print=False, verb_char=None):
         self.word_iter = wi.WordIterator(filename)  # source of words that will be analyzed
+        if verb_char is not None:
+            self.word_iter.add_separator(verb_char)
+        self.verb_char = verb_char  # used for inline verbatim text
         self.color_print = color_print  # input text will be printed(with colors)
         self.printer = cp.Printer()
         self.regular_words_count = 0
@@ -27,7 +30,6 @@ class Counter:
         3) captions
         """
         self.__context = "regular-text"
-        self.verb_char = None  # used for inline verbatim text
 
     def run(self):
         """
@@ -153,8 +155,7 @@ class Counter:
         elif word == '\\begtt':
             self.__load_verbatim()
         elif word == '\\verbchar' or word == '\\activettchar':  # keywords with same functionality
-            self.verb_char = arg
-            self.word_iter.add_separator(arg)
+            self.__set_verb_char(word, arg, pair[1])
         elif word == '\\code':
             self.__load_code_verbatim()
         elif word in kw.logos:
@@ -362,6 +363,24 @@ class Counter:
             self.caption_words_count += 1
             if len(self.all_headers):
                 self.all_headers[-1].add_caption_word()
+
+    def __set_verb_char(self, word, arg, sep):
+        """
+        Loads new character for inline verbatim
+        """
+        if arg is not None and len(arg) == 1:
+            self.verb_char = arg
+            self.word_iter.add_separator(arg)
+        elif arg is None and sep == '':
+            pair = self.word_iter.read()
+            if len(pair[0]) != 1:
+                raise Exception("Invalid use of " + word)
+            else:
+                self.print_irrelevant_word(pair)
+                self.verb_char = pair[0]
+                self.word_iter.add_separator(pair[0])
+        else:
+            raise Exception("Invalid use of " + word)
 
     def __read_arguments(self, word):
         """
