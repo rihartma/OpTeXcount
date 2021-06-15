@@ -284,6 +284,9 @@ class Counter:
         pair = self.word_iter.read()
         if pair is None:
             raise Exception("No opening curly bracket found!")
+        while len(pair[0]) == 0 or pair[0].isspace():
+            self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
         if pair[0] != "{":
             self.__context = orig_context
             self.word_iter.push_back(pair)
