@@ -8,10 +8,10 @@ def main():
         print("Usage: python3 " + sys.argv[0] + " path-to-file [-verbose] [-set-verbchar=verbatim-character]")
     elif not os.path.isfile(sys.argv[1]):
         print(sys.argv[1] + " Invalid filename!")
-    elif len(sys.argv) == 3 and (sys.argv[2] != "-verbose" or sys.argv[2][0:-1] != "-set-verbchar="):
+    elif len(sys.argv) == 3 and sys.argv[2] != "-verbose" and sys.argv[2][0:-1] != "-set-verbchar=":
         print(sys.argv[2] + " Invalid specifier!")
         print("Usage: python3 " + sys.argv[0] + " path-to-file [-verbose] [-set-verbchar=verbatim-character]")
-    elif len(sys.argv) == 4 and (sys.argv[2] != "-verbose" or sys.argv[3][0:-1] != "-set-verbchar="):
+    elif len(sys.argv) == 4 and sys.argv[2] != "-verbose" and sys.argv[3][0:-1] != "-set-verbchar=":
         if sys.argv[2] != "-verbose":
             print(sys.argv[2] + " Invalid specifier!")
         if sys.argv[3][0:-1] != "-set-verbchar=":
