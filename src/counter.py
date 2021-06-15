@@ -345,6 +345,9 @@ class Counter:
         In case of verbatim using "\code" keyword
         """
         pair = self.word_iter.read()
+        while len(pair[0]) == 0 or pair[0].isspace():
+            self.print_irrelevant_word(pair)
+            pair = self.word_iter.read()
         if pair[0] != "{":
             raise Exception("\\Code must be followed be opening curly bracket('{')!")
         self.print_irrelevant_word(pair)
