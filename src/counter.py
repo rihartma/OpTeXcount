@@ -153,6 +153,7 @@ class Counter:
                 self.figure_float_count += 1
             self.__read_arguments(word)
         elif word == '\\begtt':
+            self.__skip_commentary()
             self.__load_verbatim()
         elif word == '\\verbchar' or word == '\\activettchar':  # keywords with same functionality
             self.__set_verb_char(word, arg, pair[1])
