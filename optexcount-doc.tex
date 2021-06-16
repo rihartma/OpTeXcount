@@ -39,7 +39,7 @@ To get this utility running, Python3 has to be installed. Then user can run this
 python3 optexcount.py optex-filename
 \endtt
 
-User can also use {\Blue `-verbose`} specifier. The source code will be printed on the screen with colored words, so he can easily see, what is considered as text word, header word, caption word, keyword etc.
+User can also use two optional specifiers: {\Blue `-verbose`} and {\Blue `-set-verbchar=verb-char`}. When the utility is ran in {\Blue `-verbose`} mode, the source code is printed on the screen with colored words, so he can easily see, what is considered as text word, header word, caption word or keyword. User can specify(using {\Blue `-set-verbchar=verb-char`} specifier) implicit verbatim inline character. This can be useful when the specific verbatim character is used in the file but not explicitely set in the file. The situation may occur for example when user wants to count words in file, that is read by different main file. The verbatim character is set in the main file, but not in the file we want to analyze.
 
 \sec A Brief Implementation Description
 
