@@ -1,12 +1,25 @@
 
-\report
 \fontfam[Termes]
 \margins/1 a4 (3,3,3,3)cm
 \typosize[11.5/13.5]
-\activettchar`
+\verbchar`
 
-\tit \OpTeX count
-\author Richard Hartmann
+\def\title{\OpTeX count}
+\def\desc{Python script for counting words in \OpTeX/ documents}
+\def\author{Richard Hartmann}
+
+\def\maketitle {\vbox to 9 \baselineskip{
+    \parindent=0pt
+    \leftskip=0pt plus 1fill \rightskip=0pt plus 1fill
+    {\parskip=14pt \typoscale[2000/]\bf \title \par}
+    {\parskip=19pt \typoscale[1200/]\desc \par}
+    {\parskip=10pt \it \author \par}
+    {\parskip=8pt \the\day.\,\the\month.\,\the\year \par}
+    \vfill
+}}
+
+\maketitle
+
 
 \bigskip
 
