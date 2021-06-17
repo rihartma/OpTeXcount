@@ -83,6 +83,8 @@ class WordIterator:
         line = re.sub(r'(?<!\\)(?:\\\\)*((\$\$)|(\$))', r' \1 ', line)
         # All escaped alphabetic characters are separated from the previous word
         line = re.sub(r'(?<!\\)(\\\\)*(\\)([A-Za-z])', r'\1 \2\3', line)
+        # Non escaped character ~ is replaced with space
+        line = re.sub(r'(?<!\\)(?:\\\\)*(~)', r' \1 ', line)
         # Iterate through every separator and put spaces around them
         for sep in self.__separators:
             line = re.sub('(' + sep + ')', r' \1 ', line)
