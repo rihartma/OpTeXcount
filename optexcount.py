@@ -1,3 +1,10 @@
+"""
+The main file for entire optexcount utility
+Author: Richard Hartmann
+Version: 1.0
+"""
+
+
 import sys
 import os.path
 import src.counter
