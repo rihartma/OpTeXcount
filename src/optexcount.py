@@ -26,7 +26,7 @@ def main():
             args.set_verbchar = args.set_verbchar[0]
 
     try:
-        c = src.counter.Counter(args.filename.name, args.verbose, args.set_verbchar)
+        c = counter.Counter(args.filename.name, args.verbose, args.set_verbchar)
         c.run()
         c.print_result()
     except Exception as err:
