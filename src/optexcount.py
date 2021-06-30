@@ -8,7 +8,7 @@ Version: 1.1
 
 
 import argparse
-import src.counter
+import counter
 
 
 def main():

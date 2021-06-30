@@ -1,7 +1,7 @@
-import src.keywords as kw
-import src.word_iterator as wi
-import src.header as hd
-import src.color_print as cp
+import keywords as kw
+import word_iterator as wi
+import header as hd
+import color_print as cp
 
 
 class Counter:
