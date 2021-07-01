@@ -51,7 +51,7 @@ If there is a verbatim text in some category, its words are counted too.
 Alongside above mentioned statistics, all individual sections are printed separately with particular word counts.
 
 To get this utility running, you need to install it using basic bash script.
-Use command `sudo ./install.sh`.
+Use command {\Blue `sudo ./install.sh`}.
 Installation requires `python3` and `zip` utility running.
 Then user can run this utility by command:
 
@@ -59,7 +59,7 @@ Then user can run this utility by command:
 optexcount [-h] [-v] [-s SET_VERBCHAR] [--version] filename
 \endtt
 
-Use {\Blue `-h`} or `--help` specifier for the help message.
+Use {\Blue `-h`} or {\Blue `--help`} specifier for the help message.
 User can also use two optional specifiers: {\Blue `-v`}~/~{\Blue `--verbose`} and {\Blue -s SET_VERBCHAR}~/~{\Blue --set-verbchar SET_VERBCHAR}.
 When the utility is ran in verbose mode, it prints the source code on the screen with colored words, so user can easily see, what is considered as text word, header word, caption word or keyword.
 Character {\Blue `SET_VERBCHAR`} sets implicit verbatim inline character.
@@ -67,7 +67,7 @@ This can be useful when the specific verbatim character is used in the file but 
 The situation may occur for example when user wants to count words in file, that is read by different main file.
 The verbatim character is set in the main file, but not in the file we want to analyze.
 
-In case you don't want to install this software you can run python script `src/optexcount.py` with `python3` command explicitly.
+In case you don't want to install this software you can run python script {\Blue `src/optexcount.py`} with {\Blue `python3`} command explicitly.
 
 \sec A Brief Implementation Description
 
@@ -87,7 +87,7 @@ The place, from which we process the word also determines the category of the wo
 
 The results are pretty precise when the most basic \OpTeX/ constructions are used.
 As It has been already mentioned above, it is really basic and lightweight utility.
-When user uses some more advanced \TeX constructions, problems may occur, and the counts may be imprecise.
+When user uses some more advanced \TeX/ constructions, problems may occur, and the counts may be imprecise.
 It doesn't take into account macro expansion, self defined rules etc\dots When using this utility, a valid \OpTeX/ source code should be passed.
 If the file contains some errors(for example unterminated inline verbatim), utility terminates the process and won't provide much information about the problem.
 This utility only works with one particular file so it doesn't count included files as well.
